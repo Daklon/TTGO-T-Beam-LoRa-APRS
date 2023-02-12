@@ -23,117 +23,109 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Get current date
         id: date
         run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H%M%S')"
 
       - name: Cache pip
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Cache PlatformIO
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.platformio
           key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
       - name: Install PlatformIO
         run: |
           python -m pip install --upgrade pip
           pip install --upgrade platformio
       - name: Run PlatformIO
         run: pio run
-
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: marvinpinto/action-automatic-releases@latest
         with:
-          tag_name: ${{ github.ref }}-${{ steps.date.outputs.date }}
-          release_name: Release ${{ github.ref }} ${{ steps.date.outputs.date }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          title: Release ${{ github.ref_name }}-${{ steps.date.outputs.date }}
+          automatic_release_tag: ${{ github.ref_name }}-${{ steps.date.outputs.date }}
           draft: false
           prerelease: true
+      - name: Rename artifacts
+        run: |
+          mv ./.pio/build/ttgo-t-beam-v1.0/firmware.bin ./.pio/build/ttgo-t-beam-v1.0/ttgo-t-beam-v1.0-${{ steps.date.outputs.date }}.bin
+          mv ./.pio/build/ttgo-t-beam-v0.7/firmware.bin ./.pio/build/ttgo-t-beam-v0.7/ttgo-t-beam-v0.7-${{ steps.date.outputs.date }}.bin || true
+          mv ./.pio/build/ttgo-lora32-v2.1/firmware.bin ./.pio/build/ttgo-lora32-v2.1/ttgo-lora32-v2.1-${{ steps.date.outputs.date }}.bin || true
+          mv ./.pio/build/ttgo-lora32-v2/firmware.bin ./.pio/build/ttgo-lora32-v2/ttgo-lora32-v2-${{ steps.date.outputs.date }}.bin || true
+          mv ./.pio/build/ttgo-lora32-v1/firmware.bin ./.pio/build/ttgo-lora32-v1/ttgo-lora32-v1-${{ steps.date.outputs.date }}.bin || true
+          mv ./.pio/build/Heltec-WiFi-v1/firmware.bin ./.pio/build/Heltec-WiFi-v1/Heltec-WiFi-v1-${{ steps.date.outputs.date }}.bin || true
+          mv ./.pio/build/Heltec-WiFi-v2/firmware.bin ./.pio/build/Heltec-WiFi-v2/Heltec-WiFi-v2-${{ steps.date.outputs.date }}.bin || true
 
       - name: Upload ttgo-t-beam-v1.0.bin
         id: upload-release-asset-ttgo-t-beam-v1_0_bin
-        uses: actions/upload-release-asset@v1
+        uses: Fhwang0926/upload-release-asset@v1.1.17
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./.pio/build/ttgo-t-beam-v1.0/firmware.bin
-          asset_name: ttgo-t-beam-v1.0-${{ steps.date.outputs.date }}.bin
-          asset_content_type: application/octet-stream
+          asset_name: ./.pio/build/ttgo-t-beam-v1.0/ttgo-t-beam-v1.0-${{ steps.date.outputs.date }}.bin
 
       - name: Upload ttgo-t-beam-v0.7.bin
         id: upload-release-asset-ttgo-t-beam-v0_7_bin
-        uses: actions/upload-release-asset@v1
+        uses: Fhwang0926/upload-release-asset@v1.1.17
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./.pio/build/ttgo-t-beam-v0.7/firmware.bin
-          asset_name: ttgo-t-beam-v0.7-${{ steps.date.outputs.date }}.bin
-          asset_content_type: application/octet-stream
+          asset_name: ./.pio/build/ttgo-t-beam-v0.7/ttgo-t-beam-v0.7-${{ steps.date.outputs.date }}.bin
 
       - name: Upload ttgo-lora32-v2.1.bin
         id: upload-release-asset-ttgo-lora32-v2_1_bin
-        uses: actions/upload-release-asset@v1
+        uses: Fhwang0926/upload-release-asset@v1.1.17
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./.pio/build/ttgo-lora32-v2.1/firmware.bin
-          asset_name: ttgo-lora32-v2.1-${{ steps.date.outputs.date }}.bin
-          asset_content_type: application/octet-stream
+          asset_name: ./.pio/build/ttgo-lora32-v2.1/ttgo-lora32-v2.1-${{ steps.date.outputs.date }}.bin
 
       - name: Upload ttgo-lora32-v2.bin
         id: upload-release-asset-ttgo-lora32-v2_bin
-        uses: actions/upload-release-asset@v1
+        uses: Fhwang0926/upload-release-asset@v1.1.17
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./.pio/build/ttgo-lora32-v2/firmware.bin
-          asset_name: ttgo-lora32-v2-${{ steps.date.outputs.date }}.bin
-          asset_content_type: application/octet-stream
+          asset_name: ./.pio/build/ttgo-lora32-v2/ttgo-lora32-v2-${{ steps.date.outputs.date }}.bin
 
       - name: Upload ttgo-lora32-v1.bin
         id: upload-release-asset-ttgo-lora32-v1_bin
-        uses: actions/upload-release-asset@v1
+        uses: Fhwang0926/upload-release-asset@v1.1.17
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./.pio/build/ttgo-lora32-v1/firmware.bin
-          asset_name: ttgo-lora32-v1-${{ steps.date.outputs.date }}.bin
-          asset_content_type: application/octet-stream
+          asset_name: ./.pio/build/ttgo-lora32-v1/ttgo-lora32-v1-${{ steps.date.outputs.date }}.bin
 
       - name: Upload Heltec-WiFi-v1.bin
         id: upload-release-asset-Heltec-WiFi-v1_bin
-        uses: actions/upload-release-asset@v1
+        uses: Fhwang0926/upload-release-asset@v1.1.17
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./.pio/build/Heltec-WiFi-v1/firmware.bin
-          asset_name: Heltec-WiFi-v1-${{ steps.date.outputs.date }}.bin
-          asset_content_type: application/octet-stream
+          asset_name: ./.pio/build/Heltec-WiFi-v1/Heltec-WiFi-v1-${{ steps.date.outputs.date }}.bin
 
       - name: Upload Heltec-WiFi-v2.bin
         id: upload-release-asset-Heltec-WiFi-v2_bin
-        uses: actions/upload-release-asset@v1
+        uses: Fhwang0926/upload-release-asset@v1.1.17
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./.pio/build/Heltec-WiFi-v2/firmware.bin
-          asset_name: Heltec-WiFi-v2-${{ steps.date.outputs.date }}.bin
-          asset_content_type: application/octet-stream
-
+          asset_name: ./.pio/build/Heltec-WiFi-v2/Heltec-WiFi-v2-${{ steps.date.outputs.date }}.bin
